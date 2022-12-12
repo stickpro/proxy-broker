@@ -1,0 +1,14 @@
+services:
+  app:
+    image: asocks-ws
+    container_name: asocks-ws
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 8020:8020
+    volumes:
+      - ./.bin/:/root/
+      - ./configs/:/root/configs/
+    env_file:
+      - .env
