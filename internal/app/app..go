@@ -10,6 +10,7 @@ import (
 	"asocks-ws/pkg/logger"
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
@@ -34,9 +35,8 @@ func Run(configDir string) {
 	})
 
 	router := router.NewRouter(services)
-	router.Init()
-
-	srv := server.NewServer(cfg.HTTP)
+	fmt.Println(cfg.HTTP)
+	srv := server.NewServer(cfg.HTTP, router.Init())
 
 	go func() {
 		if err := srv.Run(); !errors.Is(err, http.ErrServerClosed) {

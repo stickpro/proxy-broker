@@ -1,7 +1,7 @@
 package domain
 
 import (
-	"google.golang.org/genproto/googleapis/type/decimal"
+	"github.com/shopspring/decimal"
 	"time"
 )
 

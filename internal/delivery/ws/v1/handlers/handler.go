@@ -1,6 +1,9 @@
 package handlers
 
-import "asocks-ws/internal/service"
+import (
+	"asocks-ws/internal/service"
+	"github.com/gin-gonic/gin"
+)
 
 type Handler struct {
 	services *service.Services
@@ -12,6 +15,10 @@ func NewHandler(services *service.Services) *Handler {
 	}
 }
 
-func (h *Handler) Init() {
-	h.initUserProxyRoutes()
+/* http://arlimus.github.io/articles/gin.and.gorilla/  just try*/
+func (h *Handler) Init(api *gin.RouterGroup) {
+	v1 := api.Group("/v1")
+	{
+		h.initUserProxyRoutes(v1)
+	}
 }

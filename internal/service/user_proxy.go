@@ -19,6 +19,6 @@ func NewUserProxyService(repository repository.UserProxy) *UserProxyService {
 	}
 }
 
-func (u *UserProxyService) FindByTgId(id int) (domain.UserProxy, error) {
+func (u *UserProxyService) FindById(id int) (domain.UserProxy, error) {
 	return u.repository.FindByColumn(id, "id")
 }

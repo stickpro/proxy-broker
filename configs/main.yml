@@ -1,8 +1,8 @@
 http:
-  port: 8080
+  port: 8011
   maxHeaderBytes: 1
   readTimeout: 10s
   writeTimeout: 10s
 
 db:
-  databaseName: vending
+  databaseName: laravel
