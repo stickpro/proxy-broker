@@ -10,3 +10,6 @@ run: build
 
 rebuild:
 	docker-compose up -d --no-deps --build
+
+run-stade: build
+	./.bin/app
