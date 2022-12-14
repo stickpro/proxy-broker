@@ -13,6 +13,7 @@ type Deps struct {
 
 func NewServices(deps Deps) *Services {
 	userProxyService := NewUserProxyService(deps.Repository.UserProxy)
+
 	return &Services{
 		UserProxy: userProxyService,
 	}

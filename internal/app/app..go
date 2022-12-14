@@ -38,6 +38,13 @@ func Run(configDir string) {
 	fmt.Println(cfg.HTTP)
 	srv := server.NewServer(cfg.HTTP, router.Init())
 
+	service.InitKafkaConsumer()
+
+	if err != nil {
+		logger.Error(err)
+		return
+	}
+
 	go func() {
 		if err := srv.Run(); !errors.Is(err, http.ErrServerClosed) {
 			logger.Errorf("error occurred while running http server: %s\n", err.Error())
