@@ -29,11 +29,11 @@ type (
 		MaxHeaderMegabytes int           `mapstructure:"maxHeaderBytes"`
 	}
 	DBConfig struct {
-		Host     string
-		Port     string
-		Username string
-		Password string
-		DBName   string
+		Host     string `mapstructure:"hostname"`
+		Port     string `mapstructure:"port"`
+		Username string `mapstructure:"userName"`
+		Password string `mapstructure:"password"`
+		DBName   string `mapstructure:"name"`
 	}
 )
 
@@ -51,7 +51,8 @@ func Init(configDir string) (*Config, error) {
 	if err := unmarshal(&cfg); err != nil {
 		return nil, err
 	}
-	setFromEnv(&cfg)
+	/* to-do set from .env */
+	//setFromEnv(&cfg)
 	return &cfg, nil
 
 }
@@ -86,13 +87,11 @@ func parseConfigFile(folder, env string) error {
 
 func setFromEnv(cfg *Config) {
 	cfg.HTTP.Host = viper.GetString("host")
-
 	cfg.DB.Host = viper.GetString("hostname")
 	cfg.DB.Port = viper.GetString("port")
 	cfg.DB.Username = viper.GetString("username")
 	cfg.DB.Password = viper.GetString("password")
 	cfg.DB.DBName = viper.GetString("name")
-
 	cfg.Environment = viper.GetString("env")
 }
 
@@ -117,7 +116,6 @@ func parseEnv() error {
 
 func parseHostFromEnv() error {
 	viper.SetEnvPrefix("http")
-
 	return viper.BindEnv("hostname")
 }
 

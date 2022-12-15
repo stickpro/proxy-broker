@@ -5,4 +5,9 @@ http:
   writeTimeout: 10s
 
 db:
-  databaseName: laravel
+  hostname: localhost
+  name: laravel
+  port: 3306
+  username: sail
+  password: password
+

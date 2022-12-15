@@ -21,7 +21,7 @@ type UserProxy struct {
 	Asn                  int             `json:"asn"`
 	Status               int             `json:"status"`
 	Password             string          `json:"password"`
-	ExtIp                string          `json:"ext_ip"`
+	ExtIp                string          `json:"extip"`
 	ExtIpStatus          string          `json:"ext_ip_status"`
 	Session              int             `json:"session"`
 	MethodRotate         string          `json:"method_rotate"`
@@ -30,4 +30,13 @@ type UserProxy struct {
 	Name                 string          `json:"name"`
 	LastConnectedAt      time.Time       `json:"last_connected_at"`
 	CostLastConnectedDay decimal.Decimal `json:"cost_last_connected_day"`
+}
+
+type UpdateUserProxy struct {
+	ExtIp string `json:"extip"`
+}
+
+type MessageUserProxy struct {
+	ID int    `json:"id"`
+	IP string `json:"ip"`
 }

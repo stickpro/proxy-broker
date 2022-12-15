@@ -10,7 +10,6 @@ import (
 	"asocks-ws/pkg/logger"
 	"context"
 	"errors"
-	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
@@ -25,7 +24,6 @@ func Run(configDir string) {
 		logger.Error(err)
 		return
 	}
-
 	db, _ := mysql.ConnectionDataBase(cfg.DB.Host, cfg.DB.Username, cfg.DB.Password, cfg.DB.DBName, cfg.DB.Port)
 
 	repos := repository.NewRepositories(db)
@@ -35,10 +33,7 @@ func Run(configDir string) {
 	})
 
 	router := router.NewRouter(services)
-	fmt.Println(cfg.HTTP)
 	srv := server.NewServer(cfg.HTTP, router.Init())
-
-	service.InitKafkaConsumer()
 
 	if err != nil {
 		logger.Error(err)
@@ -49,6 +44,10 @@ func Run(configDir string) {
 		if err := srv.Run(); !errors.Is(err, http.ErrServerClosed) {
 			logger.Errorf("error occurred while running http server: %s\n", err.Error())
 		}
+	}()
+	consumer := service.NewConsumer(services)
+	go func() {
+		consumer.InitKafkaConsumer()
 	}()
 
 	logger.Info("Server started")

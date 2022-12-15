@@ -12,28 +12,17 @@ var upgrader = websocket.Upgrader{
 }
 
 func (h *Handler) UsersProxyIndex(c *gin.Context) {
-	//conn, _ := upgrader.Upgrade(w, r, nil) // error ignored for sake of simplicity
-	//
-	//for {
-	//	msgType, msg, err := conn.ReadMessage()
-	//	if err != nil {
-	//		return
-	//	}
-	//	fmt.Printf("%s sent: %s\n", conn.RemoteAddr(), string(msg))
-	//	if err = conn.WriteMessage(msgType, msg); err != nil {
-	//		return
-	//	}
-	//}
-	data := struct {
-		Name string
-		Age  int
-	}{"Joh Doe", 30}
-	c.JSON(http.StatusOK, data)
+	userProxy, err := h.services.UserProxy.FindById(4)
+	if err != nil {
+		newResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	c.JSON(http.StatusOK, userProxy)
 
 }
 
 func (h *Handler) initUserProxyRoutes(api *gin.RouterGroup) {
-	usersProxy := api.Group("/users")
+	usersProxy := api.Group("/user-proxy")
 	{
 		usersProxy.GET("", h.UsersProxyIndex)
 	}
