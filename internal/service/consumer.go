@@ -1,20 +1,28 @@
 package service
 
 import (
-	"asocks-ws/internal/domain"
 	"encoding/json"
 	"fmt"
-	"github.com/Shopify/sarama"
 	"time"
+
+	"asocks-ws/internal/config"
+	"github.com/Shopify/sarama"
 )
 
 type Consumer struct {
-	services *Services
+	services  *Services
+	kafkaHost string
 }
 
-func NewConsumer(services *Services) *Consumer {
+type InitMessage struct {
+	Command string `json:"command"`
+	Data    string `json:"data"`
+}
+
+func NewConsumer(cfg config.KafkaConfig, services *Services) *Consumer {
 	return &Consumer{
-		services: services,
+		services:  services,
+		kafkaHost: cfg.Host + ":" + cfg.Port,
 	}
 }
 
@@ -25,11 +33,10 @@ func (c *Consumer) InitKafkaConsumer() {
 	config.Consumer.Return.Errors = true
 	config.Version = sarama.V0_11_0_2
 	config.Consumer.Offsets.AutoCommit.Enable = true
-	config.Consumer.Offsets.Initial = sarama.OffsetNewest
+	config.Consumer.Offsets.Initial = sarama.OffsetOldest
 	config.Consumer.Offsets.AutoCommit.Interval = time.Millisecond * 50
-
 	// consumer
-	consumer, err := sarama.NewConsumer([]string{"kafka:9092"}, config)
+	consumer, err := sarama.NewConsumer([]string{c.kafkaHost}, config)
 	if err != nil {
 		fmt.Printf("Create consumer error %s\n", err.Error())
 		return
@@ -37,7 +44,7 @@ func (c *Consumer) InitKafkaConsumer() {
 
 	defer consumer.Close()
 
-	partitionConsumer, err := consumer.ConsumePartition("asocks-update-ips", 0, sarama.OffsetNewest)
+	partitionConsumer, err := consumer.ConsumePartition("lpm-commands", 0, sarama.OffsetNewest)
 	if err != nil {
 		fmt.Printf("try create partition_consumer error %s\n", err.Error())
 		return
@@ -47,20 +54,31 @@ func (c *Consumer) InitKafkaConsumer() {
 	for {
 		select {
 		case msg := <-partitionConsumer.Messages():
-			var messageUserProxy domain.MessageUserProxy
-			var input domain.UpdateUserProxy
-			err := json.Unmarshal([]byte(msg.Value), &messageUserProxy)
+			var messageInitLpm InitMessage
+			err := json.Unmarshal(msg.Value, &messageInitLpm)
 			if err != nil {
 				return
 			}
-			input.ExtIp = messageUserProxy.IP
-			ip, err := c.services.UserProxy.UpdateExtIp(messageUserProxy, input)
-			if err != nil {
-				return
+
+			if messageInitLpm.Command == "init" {
+				fmt.Println("[data]", messageInitLpm.Data)
+
+				server, err := c.services.Server.FindByIP(messageInitLpm.Data)
+				if err != nil {
+					return
+				}
+
+				// TODO change from request
+				userProxies, err := c.services.UserProxy.FindByServerIP(server.Ip)
+				if err != nil {
+					return
+				}
+	
+
+				go func() {
+					c.services.UserProxy.SendKafkaInitMessage(userProxies, messageInitLpm.Data)
+				}()
 			}
-			fmt.Println(messageUserProxy)
-			fmt.Println("[UpdatedProxyIp]", ip)
-			fmt.Println("msg offset: ", msg.Offset, " partition: ", msg.Partition, " timestrap: ", msg.Timestamp.Format("2006-Jan-02 15:04"), " value: ", string(msg.Value))
 
 		case err := <-partitionConsumer.Errors():
 			fmt.Printf("err :%s\n", err.Error())

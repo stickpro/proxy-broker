@@ -11,3 +11,8 @@ db:
   username: sail
   password: password
 
+kafka:
+  kafka_host: kafka
+  kafka_port: 9092
+
+api_token: S9QmPxwWXnLW53RDDqpFqsf8RtBViBGiIRjzQtVIXqFS
