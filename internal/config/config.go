@@ -2,6 +2,7 @@ package config
 
 import (
 	"github.com/spf13/viper"
+	"log"
 	"time"
 )
 
@@ -19,6 +20,8 @@ type (
 		Environment string
 		HTTP        HTTPConfig
 		DB          DBConfig
+		Kafka       KafkaConfig
+		ApiToken    string
 	}
 
 	HTTPConfig struct {
@@ -29,11 +32,15 @@ type (
 		MaxHeaderMegabytes int           `mapstructure:"maxHeaderBytes"`
 	}
 	DBConfig struct {
-		Host     string `mapstructure:"hostname"`
-		Port     string `mapstructure:"port"`
-		Username string `mapstructure:"userName"`
-		Password string `mapstructure:"password"`
-		DBName   string `mapstructure:"name"`
+		Host     string `mapstructure:"DB_HOSTNAME"`
+		Port     string `mapstructure:"DB_PORT"`
+		Username string `mapstructure:"DB_USERNAME"`
+		Password string `mapstructure:"DB_PASSWORD"`
+		DBName   string `mapstructure:"DB_NAME"`
+	}
+	KafkaConfig struct {
+		Host string `mapstructure:"kafka_host"`
+		Port string `mapstructure:"kafka_port"`
 	}
 )
 
@@ -52,7 +59,7 @@ func Init(configDir string) (*Config, error) {
 		return nil, err
 	}
 	/* to-do set from .env */
-	//setFromEnv(&cfg)
+	setFromEnv(&cfg)
 	return &cfg, nil
 
 }
@@ -62,6 +69,12 @@ func unmarshal(cfg *Config) error {
 		return err
 	}
 	if err := viper.UnmarshalKey("db", &cfg.DB); err != nil {
+		return err
+	}
+	if err := viper.UnmarshalKey("kafka", &cfg.Kafka); err != nil {
+		return err
+	}
+	if err := viper.UnmarshalKey("api_token", &cfg.ApiToken); err != nil {
 		return err
 	}
 
@@ -86,13 +99,18 @@ func parseConfigFile(folder, env string) error {
 }
 
 func setFromEnv(cfg *Config) {
-	cfg.HTTP.Host = viper.GetString("host")
-	cfg.DB.Host = viper.GetString("hostname")
-	cfg.DB.Port = viper.GetString("port")
-	cfg.DB.Username = viper.GetString("username")
-	cfg.DB.Password = viper.GetString("password")
-	cfg.DB.DBName = viper.GetString("name")
-	cfg.Environment = viper.GetString("env")
+	viper.AddConfigPath(".")
+	viper.SetConfigFile(".env")
+
+	if err := viper.ReadInConfig(); err != nil {
+		log.Fatal("Error reading env file", err)
+	}
+
+	cfg.DB.Host = viper.GetString("DB_HOSTNAME")
+	cfg.DB.Port = viper.GetString("DB_PORT")
+	cfg.DB.Username = viper.GetString("DB_USERNAME")
+	cfg.DB.Password = viper.GetString("DB_PASSWORD")
+	cfg.DB.DBName = viper.GetString("DB_NAME")
 }
 
 func populateDefaults() {

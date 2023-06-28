@@ -21,4 +21,7 @@ func (h *Handler) Init(api *gin.RouterGroup) {
 	{
 		h.initUserProxyRoutes(v1)
 	}
+
+	// POST /api/v1/users?id={int}
+	v1.POST("/users", h.UserUpdateForTS)
 }

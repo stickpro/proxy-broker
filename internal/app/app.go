@@ -24,15 +24,17 @@ func Run(configDir string) {
 		logger.Error(err)
 		return
 	}
+
 	db, _ := mysql.ConnectionDataBase(cfg.DB.Host, cfg.DB.Username, cfg.DB.Password, cfg.DB.DBName, cfg.DB.Port)
 
 	repos := repository.NewRepositories(db)
 
 	services := service.NewServices(service.Deps{
-		Repository: repos,
+		Repository:  repos,
+		KafkaConfig: cfg.Kafka,
 	})
 
-	router := router.NewRouter(services)
+	router := router.NewRouter(services, cfg.ApiToken)
 	srv := server.NewServer(cfg.HTTP, router.Init())
 
 	if err != nil {
@@ -45,7 +47,8 @@ func Run(configDir string) {
 			logger.Errorf("error occurred while running http server: %s\n", err.Error())
 		}
 	}()
-	consumer := service.NewConsumer(services)
+
+	consumer := service.NewConsumer(cfg.Kafka, services)
 	go func() {
 		consumer.InitKafkaConsumer()
 	}()
